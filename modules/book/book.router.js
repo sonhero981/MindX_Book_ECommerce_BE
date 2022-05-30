@@ -6,6 +6,7 @@ const bookController = require("./book.controller");
 
 router.get("/", bookController.getBooks);
 router.get("/:bookId", bookController.getBook);
+router.get("/:bookId/comments", bookController.getCommentsOfBook);
 
 router.post("/", needAuthenticated, isAdmin, bookController.createBook);
 router.put("/:bookId", needAuthenticated, isAdmin, bookController.updateBook);

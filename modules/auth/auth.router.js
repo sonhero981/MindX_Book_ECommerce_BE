@@ -12,4 +12,6 @@ router.post(
 
 router.post("/login", validateInput(loginSchema, "body"), authController.login);
 
+router.post("/forgotPassword", validateInput(), authController.forgotPassword)
+
 module.exports = router;

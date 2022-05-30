@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const HTTPError = require("../common/httpError");
 
 const register = async (req, res, next) => {
-  const { username, password } = req.body;
+  const { username, password, isAdmin, email } = req.body;
   // Check xem tài khoản đã tồn tại chưa
   const existedUser = await UserModal.findOne({ username: username });
   if (existedUser) {
@@ -17,6 +17,8 @@ const register = async (req, res, next) => {
   const newUser = await UserModal.create({
     username,
     password: hashPassword,
+    isAdmin,
+    email,
   });
 
   res.send({ success: 1, data: newUser });
@@ -49,4 +51,6 @@ const login = async (req, res, next) => {
   res.send({ success: 1, data: { userId: userId, token } });
 };
 
-module.exports = { register, login };
+const forgotPassword = async (req, res, next) => {};
+
+module.exports = { register, login, forgotPassword };

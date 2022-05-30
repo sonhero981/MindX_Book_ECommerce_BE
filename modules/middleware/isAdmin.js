@@ -1,11 +1,13 @@
-const HTTPError = require('../common/httpError')
+const HTTPError = require("../common/httpError");
 
 async function isAdmin(req, res, next) {
-  const senderUser = req.user;
+  const senderUser = res.user;
+  console.log(senderUser.isAdmin);
   if (senderUser.isAdmin === true) {
     next();
+    return;
   }
-  throw new HTTPError(403,"Only admin can do operation");
+  throw new HTTPError(403, "Only admin can do operation");
 }
 
 module.exports = isAdmin;
