@@ -11,7 +11,7 @@ const CommentSchema = new mongoose.Schema(
     },
     createdBy: {
       type: mongoose.Types.ObjectId,
-      required: true,
+      ref: "User",
     },
   },
   {

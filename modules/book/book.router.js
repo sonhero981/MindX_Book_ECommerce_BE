@@ -17,4 +17,7 @@ router.delete(
   bookController.deleteBook
 );
 
+//Vote sao sách
+router.put("/:bookId/stars", needAuthenticated, bookController.voteStars);
+
 module.exports = router;

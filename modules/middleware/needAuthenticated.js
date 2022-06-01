@@ -8,7 +8,6 @@ async function needAuthenticated(req, res, next) {
   // user => next()
 
   const token = req.headers.authorization;
-  console.log(token);
   if (!token) {
     throw new HTTPError(401, "Not found token");
   }
@@ -29,7 +28,8 @@ async function needAuthenticated(req, res, next) {
   }
 
   //  Nhét thêm thông tin vào biến request
-  res.user = existedUser;
+  req.user = existedUser;
+
   next();
 }
 

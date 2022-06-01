@@ -7,6 +7,8 @@ const mongoose = require("mongoose");
 const bookRouter = require("./modules/book/book.router");
 const authRouter = require("./modules/auth/auth.router");
 const uploadRouter = require("./modules/upload/upload.router");
+const commentRouter = require("./modules/comment/comment.router");
+const cartRouter = require("./modules/cart/cart.router");
 
 const app = express();
 app.use(express.json());
@@ -21,6 +23,8 @@ mongoose.connect(process.env.MONGODB_URI, err => {
 app.use("/api/books", bookRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/comments", commentRouter);
+app.use("/api/cart", cartRouter);
 
 app.use("*", (req, res, next) => {
   res.send({ message: "404 not found" });

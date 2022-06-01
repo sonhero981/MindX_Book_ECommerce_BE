@@ -4,11 +4,17 @@ const jwt = require("jsonwebtoken");
 const HTTPError = require("../common/httpError");
 
 const register = async (req, res, next) => {
-  const { username, password, isAdmin, email } = req.body;
+  const { username, password, email } = req.body;
   // Check xem tài khoản đã tồn tại chưa
   const existedUser = await UserModal.findOne({ username: username });
   if (existedUser) {
     throw new HTTPError(400, "Username duplicate");
+  }
+  const existedEmail = await UserModal.findOne({ email: email });
+
+  //Check email đã tồn tại chưa
+  if (existedEmail) {
+    throw new HTTPError(400, "Email duplicate");
   }
   //Mã hóa password
   const salt = await bcrypt.genSalt(10);
@@ -17,8 +23,8 @@ const register = async (req, res, next) => {
   const newUser = await UserModal.create({
     username,
     password: hashPassword,
-    isAdmin,
     email,
+    isAdmin: false,
   });
 
   res.send({ success: 1, data: newUser });

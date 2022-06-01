@@ -8,30 +8,37 @@ const BookSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      // required: true,
+      required: true,
     },
     imageURL: {
-      type: String,
-      // required: true,
+      type: Array,
+      required: true,
     },
     author: {
       type: String,
       required: true,
     },
+    publishers: {
+      type: String,
+      required: true,
+    },
     price: {
       type: Number,
-      // required: true,
+      required: true,
     },
     category: {
-      type: [String],
-      // required: true,
+      type: String,
+      required: true,
     },
     amount: {
       type: Number,
-      // required: true,
+      required: true,
     },
     stars: {
-      type: Number,
+      totalNumberStars: Number,
+      totalAmountVotes: Number,
+      averageStars: Number,
+      usersVote: Array,
     },
   },
   {
