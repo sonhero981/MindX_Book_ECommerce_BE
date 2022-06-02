@@ -7,11 +7,9 @@ const getBooks = async (req, res, next) => {
   const offsetNumber = offset && Number(offset) ? Number(offset) : 0;
   const limitNumber = limit && Number(limit) ? Number(limit) : 10;
 
-  const books = await Promise.all(
-    BookModel.find({}).skip(offsetNumber).limit(limitNumber)
-  );
+  const books = await BookModel.find({}).skip(offsetNumber).limit(limitNumber);
 
-  const totalBook = await BookModel.countDocuments(books);
+  const totalBook = await BookModel.countDocuments();
   res.send({ success: 1, data: books, totalBook: totalBook });
 };
 
@@ -103,10 +101,13 @@ const deleteBook = async (req, res, next) => {
   res.send({ success: 1 });
 };
 
-const getBookByStar = async (req, res, next) => {
-  const { star } = req.query;
-  const books = await BookModel.find({ star: { $gt: star } }).sort({
-    star: -1,
+const sortBookByPrice = async (req, res, next) => {
+  const { price } = req.query;
+  console.log(price);
+  console.log("chay");
+
+  const books = await BookModel.find({ price: { $gt: price } }).sort({
+    price: -1,
   });
   res.send({ success: 1, data: books });
 };
@@ -130,13 +131,25 @@ const getBookByFilter = async (req, res, next) => {
 const voteStars = async (req, res, next) => {
   const { numberStars } = req.body;
   const { bookId } = req.params;
-  const senderUser = res.user;
+  const senderUser = req.user;
+  console.log(senderUser);
   const book = await BookModel.findById(bookId);
-  const oldUsersVote = book.stars.usersVote;
+  const oldUsersVote = book?.stars?.usersVote;
+  console.log("oldUserVote", oldUsersVote);
+  if (oldUsersVote.length === 0) {
+    book.stars = {
+      totalNumberStars: 0,
+      totalAmountVotes: 0,
+      averageStars: 0,
+      usersVote: [],
+    };
+  }
 
   if (oldUsersVote.includes(String(senderUser._id))) {
     throw new HTTPError(400, "You cannot vote for the same book twice");
   }
+
+  console.log("book.stars.totalNumberStars", book.stars.totalNumberStars);
 
   const newTotalNumberStars = book.stars.totalNumberStars + numberStars;
   const newTotalAmountVotes = book.stars.totalAmountVotes + 1;
@@ -165,7 +178,7 @@ module.exports = {
   updateBook,
   deleteBook,
   getBookByFilter,
-  getBookByStar,
+  sortBookByPrice,
   getCommentsOfBook,
   voteStars,
 };

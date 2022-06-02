@@ -32,6 +32,7 @@ app.use("*", (req, res, next) => {
 
 // Bắt toàn bộ các middleware mà gọi hàm next (error)
 app.use(function (err, req, res, next) {
+  console.log(err);
   res.status(err.status || 500).send({ success: 0, message: err.message });
 });
 

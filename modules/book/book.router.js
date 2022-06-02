@@ -1,4 +1,5 @@
 const express = require("express");
+const { route } = require("express/lib/router");
 const isAdmin = require("../middleware/isAdmin");
 const needAuthenticated = require("../middleware/needAuthenticated");
 const router = express.Router();
@@ -17,6 +18,7 @@ router.delete(
   bookController.deleteBook
 );
 
+router.get("/price", bookController.sortBookByPrice);
 //Vote sao sách
 router.put("/:bookId/stars", needAuthenticated, bookController.voteStars);
 
