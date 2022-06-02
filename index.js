@@ -9,9 +9,11 @@ const authRouter = require("./modules/auth/auth.router");
 const uploadRouter = require("./modules/upload/upload.router");
 const commentRouter = require("./modules/comment/comment.router");
 const cartRouter = require("./modules/cart/cart.router");
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 mongoose.connect(process.env.MONGODB_URI, err => {
   if (err) {
