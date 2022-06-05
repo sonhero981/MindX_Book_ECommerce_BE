@@ -36,7 +36,6 @@ const getCommentsOfBook = async (req, res, next) => {
 
   res.send({
     success: 1,
-    data: commentsOfBook,
     enhanceUsernameComment: enhanceUsernameComment,
   });
 };
@@ -54,7 +53,6 @@ const createBook = async (req, res, next) => {
     price,
     publisher,
     publisher_date,
-    number_of_page,
     amount,
     manufacturer,
   } = req.body;
@@ -66,7 +64,6 @@ const createBook = async (req, res, next) => {
     category,
     publisher,
     publisher_date,
-    number_of_page,
     manufacturer,
     amount,
     createdBy: senderUser._id,
@@ -136,6 +133,14 @@ const getBookByFilter = async (req, res, next) => {
   res.send({ success: 1, data: books });
 };
 
+const getBookByCategory = async (req, res, next) => {
+  const { category } = req.query;
+
+  const books = await BookModel.find(category);
+
+  res.send({ success: 1, data: books });
+};
+
 const voteStars = async (req, res, next) => {
   const { numberStars } = req.body;
   const { bookId } = req.params;
@@ -185,6 +190,7 @@ module.exports = {
   createBook,
   updateBook,
   deleteBook,
+  getBookByCategory,
   getBookByFilter,
   sortBookByPrice,
   getCommentsOfBook,

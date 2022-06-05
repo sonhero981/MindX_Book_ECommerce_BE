@@ -25,9 +25,6 @@ const BookSchema = new mongoose.Schema(
     publication_date: {
       type: String,
     },
-    number_of_page: {
-      type: Number,
-    },
     manufacturer: {
       type: String,
     },
