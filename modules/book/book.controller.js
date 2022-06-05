@@ -56,6 +56,7 @@ const createBook = async (req, res, next) => {
     publisher_date,
     number_of_page,
     amount,
+    manufacturer,
   } = req.body;
   const newBook = await BookModel.create({
     name,
@@ -66,6 +67,7 @@ const createBook = async (req, res, next) => {
     publisher,
     publisher_date,
     number_of_page,
+    manufacturer,
     amount,
     createdBy: senderUser._id,
     price,
