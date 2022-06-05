@@ -1,16 +1,17 @@
-const UserModal = require("./user");
+const UserModel = require("./user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const HTTPError = require("../common/httpError");
+const { sendMail } = require("../service/mailer");
 
 const register = async (req, res, next) => {
   const { username, password, email } = req.body;
   // Check xem tài khoản đã tồn tại chưa
-  const existedUser = await UserModal.findOne({ username: username });
+  const existedUser = await UserModel.findOne({ username: username });
   if (existedUser) {
     throw new HTTPError(400, "Username duplicate");
   }
-  const existedEmail = await UserModal.findOne({ email: email });
+  const existedEmail = await UserModel.findOne({ email: email });
 
   //Check email đã tồn tại chưa
   if (existedEmail) {
@@ -20,7 +21,7 @@ const register = async (req, res, next) => {
   const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(password, salt);
 
-  const newUser = await UserModal.create({
+  const newUser = await UserModel.create({
     username,
     password: hashPassword,
     email,
@@ -32,7 +33,7 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   const { username, password } = req.body;
-  const existedUser = await UserModal.findOne({ username });
+  const existedUser = await UserModel.findOne({ username });
 
   if (!existedUser) {
     throw new HTTPError(400, "Username hoặc password không đúng");
@@ -57,6 +58,69 @@ const login = async (req, res, next) => {
   res.send({ success: 1, data: { userId: userId, token } });
 };
 
-const forgotPassword = async (req, res, next) => {};
+const forgotPassword = async (req, res, next) => {
+  const { email } = req.body;
 
-module.exports = { register, login, forgotPassword };
+  const existedUser = await UserModel.findOne({ email: email });
+  if (!existedUser) {
+    throw new HTTPError(400, "Email is not found");
+  }
+
+  function createCode() {
+    var minm = 100000;
+    var maxm = 999999;
+    return Math.floor(Math.random() * (maxm - minm + 1)) + minm;
+  }
+  const codeResetPassword = createCode();
+
+  await sendMail({
+    to: email,
+    text: `This is code: ${codeResetPassword}, This code will valid for 10 minutes`,
+  });
+
+  existedUser.codeResetPassword = {
+    code: codeResetPassword,
+    time: 5 * 60,
+    createdAt: Date.now(),
+  };
+  console.log(existedUser);
+  await existedUser.save();
+
+  res.send({ success: 1, data: "Send success" });
+};
+
+const confirmForgotPassword = async (req, res, next) => {
+  const { email, code, password, confirmPassword } = req.body;
+  const user = await UserModel.findOne({ email });
+
+  if (!user) {
+    throw new HTTPError("ko thấy user");
+  }
+
+  const currentDate = Date.now();
+  const { time, createdAt } = user.codeResetPassword;
+  const expiresDate = createdAt + time * 1000;
+
+  if (currentDate > expiresDate) {
+    throw new HTTPError("hết hạn");
+  }
+
+  if (code !== user.codeResetPassword.code) {
+    throw new HTTPError("Code ko đúng");
+  }
+
+  if (password !== confirmPassword) {
+    throw new HTTPError("mk ko trùng nhau");
+  }
+
+  //Mã hóa password
+  const salt = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(password, salt);
+  user.password = hashPassword;
+  user.codeResetPassword = null;
+
+  await user.save();
+  res.send({ success: 1, data: "Cập nhật thành công" });
+};
+
+module.exports = { register, login, forgotPassword, confirmForgotPassword };

@@ -15,7 +15,11 @@ const UserSchema = new mongoose.Schema(
     },
     isAdmin: {
       type: Boolean,
-      required: true,
+    },
+    codeResetPassword: {
+      code: Number,
+      time: Number,
+      createdAt: { type: Number, defaults: Date.now },
     },
   },
   {
@@ -23,6 +27,6 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-const UserModal = mongoose.model("User", UserSchema);
+const UserModel = mongoose.model("User", UserSchema);
 
-module.exports = UserModal;
+module.exports = UserModel;

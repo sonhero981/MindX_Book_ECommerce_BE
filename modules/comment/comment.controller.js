@@ -19,7 +19,7 @@ const getComment = async (req, res) => {
 
 const createComment = async (req, res) => {
   const { content, book } = req.body;
-  const senderUser = res.user;
+  const senderUser = req.user;
   console.log(senderUser);
   const newComment = await CommentModel.create({
     content,
@@ -31,7 +31,7 @@ const createComment = async (req, res) => {
 
 //UPDATE COMMENT
 const updateComment = async (req, res) => {
-  const senderUser = res.user;
+  const senderUser = req.user;
   const { commentId } = req.params;
   console.log(commentId);
 
@@ -58,7 +58,7 @@ const updateComment = async (req, res) => {
 
 //DELETE COMMENT
 const deleteComment = async (req, res) => {
-  const senderUser = res.user;
+  const senderUser = req.user;
   const { commentId } = req.params;
 
   const foundComment = await CommentModel.findById(commentId);

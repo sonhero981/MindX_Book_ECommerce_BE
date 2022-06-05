@@ -6,7 +6,7 @@ async function needAuthenticated(req, res, next) {
   // Định danh người dùng
   // Không phải user => trả luôn kết quá
   // user => next()
-
+  console.log("needAuthen");
   const token = req.headers.authorization;
   if (!token) {
     throw new HTTPError(401, "Not found token");

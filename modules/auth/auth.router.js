@@ -12,6 +12,7 @@ router.post(
 
 router.post("/login", validateInput(loginSchema, "body"), authController.login);
 
-router.post("/forgotPassword", validateInput(), authController.forgotPassword)
+router.post("/forgotPassword", authController.forgotPassword);
+router.post("/confirm/forgot", authController.confirmForgotPassword);
 
 module.exports = router;

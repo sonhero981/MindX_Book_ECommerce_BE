@@ -42,7 +42,9 @@ const getCommentsOfBook = async (req, res, next) => {
 };
 
 const createBook = async (req, res, next) => {
-  const senderUser = res.user;
+  console.log("create");
+
+  const senderUser = req.user;
   const {
     name,
     description,
@@ -50,7 +52,9 @@ const createBook = async (req, res, next) => {
     imageURL,
     category,
     price,
-    publishers,
+    publisher,
+    publisher_date,
+    number_of_page,
     amount,
   } = req.body;
   const newBook = await BookModel.create({
@@ -59,7 +63,9 @@ const createBook = async (req, res, next) => {
     author,
     imageURL,
     category,
-    publishers,
+    publisher,
+    publisher_date,
+    number_of_page,
     amount,
     createdBy: senderUser._id,
     price,

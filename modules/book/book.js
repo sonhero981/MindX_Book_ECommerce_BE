@@ -18,9 +18,15 @@ const BookSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    publishers: {
+    publisher: {
       type: String,
       required: true,
+    },
+    publication_date: {
+      type: String,
+    },
+    number_of_page: {
+      type: Number,
     },
     price: {
       type: Number,
