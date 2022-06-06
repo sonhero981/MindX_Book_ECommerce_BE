@@ -10,6 +10,7 @@ const uploadRouter = require("./modules/upload/upload.router");
 const commentRouter = require("./modules/comment/comment.router");
 const cartRouter = require("./modules/cart/cart.router");
 const categoryRouter = require("./modules/category/category.router");
+const billRouter = require("./modules/bill/bill.router");
 const cors = require("cors");
 
 const app = express();
@@ -29,6 +30,7 @@ app.use("/api/upload", uploadRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/category", categoryRouter);
+app.use("/api/bill", billRouter);
 
 app.use("*", (req, res, next) => {
   res.send({ message: "404 not found" });

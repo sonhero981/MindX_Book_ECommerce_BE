@@ -66,6 +66,13 @@ const forgotPassword = async (req, res, next) => {
     throw new HTTPError(400, "Email is not found");
   }
 
+  const { createdAt } = existedUser.codeResetPassword;
+  console.log(createdAt);
+  const currentDate = Date.now();
+  if (currentDate - createdAt < 60 * 1000) {
+    throw new HTTPError(400, "khong bam nhieu lan");
+  }
+
   function createCode() {
     var minm = 100000;
     var maxm = 999999;

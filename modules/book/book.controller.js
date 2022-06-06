@@ -25,18 +25,9 @@ const getCommentsOfBook = async (req, res, next) => {
     "createdBy"
   );
 
-  const enhanceUsernameComment = commentsOfBook.map(comment => {
-    const cloneComment = JSON.parse(JSON.stringify(comment));
-    return {
-      ...cloneComment,
-      createdUsername: comment.createdBy ? comment.createdBy.username : "",
-      createdBy: comment.createdBy ? comment.createdBy._id : "",
-    };
-  });
-
   res.send({
     success: 1,
-    enhanceUsernameComment: enhanceUsernameComment,
+    data: commentsOfBook,
   });
 };
 

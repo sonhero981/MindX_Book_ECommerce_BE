@@ -1,18 +1,16 @@
 const express = require("express");
-const { route } = require("express/lib/router");
 const needAuthenticated = require("../middleware/needAuthenticated");
 const router = express.Router();
 const billController = require("./bill.controller");
+const isAdmin = require("../middleware/isAdmin");
 
-router.get("/:billId", billController.getBill);
-
+router.get("/:billId", needAuthenticated, billController.getBill);
 router.post("/", needAuthenticated, billController.createBill);
-router.put("/:billId", needAuthenticated, billController.updateBill);
-// router.delete(
-//   "/:billId",
-//   needAuthenticated,
-//   isAdmin,
-//   billController.deleteBill
-// );
+router.put(
+  "/:billId",
+  needAuthenticated,
+  isAdmin,
+  billController.updateStatusBill
+);
 
 module.exports = router;

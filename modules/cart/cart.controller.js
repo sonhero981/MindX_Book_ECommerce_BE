@@ -48,7 +48,10 @@ const createOrUpdateCart = async (req, res, next) => {
       new: true,
       upsert: true,
     }
-  );
+  )
+    .populate("createdBy")
+    .populate("sellProducts.book");
+
   res.send({ success: 1, data: createOrUpdate });
 };
 
