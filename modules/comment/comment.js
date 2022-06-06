@@ -5,13 +5,16 @@ const CommentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    book: {
+    bookId: {
       type: mongoose.Types.ObjectId,
       required: true,
     },
     createdBy: {
       type: mongoose.Types.ObjectId,
       ref: "User",
+    },
+    stars: {
+      type: Number,
     },
   },
   {

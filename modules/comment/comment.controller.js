@@ -1,5 +1,6 @@
 const CommentModel = require("./comment");
 const HTTPError = require("../common/httpError");
+const BookModel = require("../book/book");
 
 //GET COMMENTS
 const getComments = async (req, res) => {
@@ -18,15 +19,51 @@ const getComment = async (req, res) => {
 //CREATE COMMENT
 
 const createComment = async (req, res) => {
-  const { content, book } = req.body;
+  const { content, bookId, numberStars } = req.body;
   const senderUser = req.user;
-  console.log(senderUser);
+  const book = await BookModel.findById(bookId);
+
+  const oldUsersVote = book?.stars?.usersVote || [];
+  console.log("book", book);
+  console.log("oldUserVote1", oldUsersVote);
+  if (oldUsersVote.length === 0) {
+    book.stars = {
+      totalNumberStars: 0,
+      totalAmountVotes: 0,
+      averageStars: 0,
+      usersVote: [],
+    };
+  }
+
+  if (oldUsersVote.includes(String(senderUser._id))) {
+    throw new HTTPError(400, "You cannot vote for the same book twice");
+  }
+
+  const newTotalNumberStars = book.stars.totalNumberStars + numberStars;
+  const newTotalAmountVotes = book.stars.totalAmountVotes + 1;
+  const newAverageStars = newTotalNumberStars / newTotalAmountVotes;
+  const newUsersVote = [...book.stars.usersVote, String(senderUser._id)];
+
+  const updateBook = await BookModel.findByIdAndUpdate(
+    book,
+    {
+      stars: {
+        totalNumberStars: newTotalNumberStars,
+        totalAmountVotes: newTotalAmountVotes,
+        averageStars: newAverageStars,
+        usersVote: newUsersVote,
+      },
+    },
+    { new: true }
+  );
+
   const newComment = await CommentModel.create({
     content,
-    book,
+    bookId,
     createdBy: senderUser._id,
+    stars: numberStars,
   });
-  res.send({ success: 1, data: newComment });
+  res.send({ success: 1, data: { newComment, updateBook } });
 };
 
 //UPDATE COMMENT
