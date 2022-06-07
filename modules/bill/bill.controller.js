@@ -55,7 +55,13 @@ const createBill = async (req, res, next) => {
     _id: { $in: bookIds },
   });
 
-  //Tru so luong sach da mua
+  sellProducts.forEach(prod => {
+    try {
+      BookModel.findById(prod._id, { $inc: { amount: -prod.qualityBook } });
+    } catch (err) {
+      console.log(err);
+    }
+  });
 
   console.log(foundSelledBook);
 
