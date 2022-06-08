@@ -3,11 +3,23 @@ const CommentModel = require("../comment/comment");
 const HTTPError = require("../common/httpError");
 
 const getBooks = async (req, res, next) => {
-  const { offset, limit } = req.query;
+  const { offset, limit, category, keyword } = req.query;
   const offsetNumber = offset && Number(offset) ? Number(offset) : 0;
   const limitNumber = limit && Number(limit) ? Number(limit) : 10;
 
-  const books = await BookModel.find({}).skip(offsetNumber).limit(limitNumber);
+  const filter = {};
+  if (category) {
+    filter.category = category;
+  }
+
+  if (keyword) {
+    const regex = new RegExp(`${keyword}`, `i`);
+    filter.name = { $regex: regex };
+  }
+
+  const books = await BookModel.find(filter)
+    .skip(offsetNumber)
+    .limit(limitNumber);
 
   const totalBook = await BookModel.countDocuments();
   res.send({ success: 1, data: books, totalBook: totalBook });
@@ -108,30 +120,6 @@ const sortBookByPrice = async (req, res, next) => {
   res.send({ success: 1, data: books });
 };
 
-const getBookByFilter = async (req, res, next) => {
-  const { category, keyword } = req.query;
-  const filter = {};
-  if (category) {
-    filter.category = category;
-  }
-
-  if (keyword) {
-    const regex = new RegExp(`${keyword}`, `i`);
-    filter.name = { $regex: regex };
-  }
-  const books = await BookModel.find(filter);
-
-  res.send({ success: 1, data: books });
-};
-
-const getBookByCategory = async (req, res, next) => {
-  const { category } = req.query;
-
-  const books = await BookModel.find(category);
-
-  res.send({ success: 1, data: books });
-};
-
 const voteStars = async (req, res, next) => {
   const { numberStars } = req.body;
   const { bookId } = req.params;
@@ -181,8 +169,6 @@ module.exports = {
   createBook,
   updateBook,
   deleteBook,
-  getBookByCategory,
-  getBookByFilter,
   sortBookByPrice,
   getCommentsOfBook,
   voteStars,
