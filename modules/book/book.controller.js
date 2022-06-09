@@ -4,8 +4,8 @@ const HTTPError = require("../common/httpError");
 
 const getBooks = async (req, res, next) => {
   const { offset, limit, category, keyword } = req.query;
-  // const offsetNumber = offset && Number(offset) ? Number(offset) : 0;
-  // const limitNumber = limit && Number(limit) ? Number(limit) : 10;
+  const offsetNumber = offset && Number(offset) ? Number(offset) : 0;
+  const limitNumber = limit && Number(limit) ? Number(limit) : 1000;
 
   const filter = {};
   if (category) {
@@ -17,9 +17,9 @@ const getBooks = async (req, res, next) => {
     filter.name = { $regex: regex };
   }
 
-  const books = await BookModel.find(filter);
-  // .skip(offsetNumber)
-  // .limit(limitNumber);
+  const books = await BookModel.find(filter)
+    .skip(offsetNumber)
+    .limit(limitNumber);
 
   const totalBook = await BookModel.countDocuments();
   res.send({ success: 1, data: books, totalBook: totalBook });
