@@ -11,6 +11,7 @@ router.post(
 );
 
 router.post("/login", validateInput(loginSchema, "body"), authController.login);
+router.get("/verify", needAuthenticated, authController.verify);
 
 router.post("/forgotPassword", authController.forgotPassword);
 router.post("/confirm/forgot", authController.confirmForgotPassword);

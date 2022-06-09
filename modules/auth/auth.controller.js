@@ -58,6 +58,15 @@ const login = async (req, res, next) => {
   res.send({ success: 1, data: { userId: userId, token } });
 };
 
+const verify = (req, res) => {
+  const { user } = req;
+
+  res.send({
+    success: 1,
+    data: user,
+  });
+};
+
 const forgotPassword = async (req, res, next) => {
   const { email } = req.body;
 
@@ -130,4 +139,10 @@ const confirmForgotPassword = async (req, res, next) => {
   res.send({ success: 1, data: "Cập nhật thành công" });
 };
 
-module.exports = { register, login, forgotPassword, confirmForgotPassword };
+module.exports = {
+  register,
+  login,
+  verify,
+  forgotPassword,
+  confirmForgotPassword,
+};
