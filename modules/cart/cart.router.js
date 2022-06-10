@@ -3,7 +3,7 @@ const needAuthenticated = require("../middleware/needAuthenticated");
 const router = express.Router();
 const cartController = require("./cart.controller");
 
-router.get("/", cartController.getCartByUser);
+router.get("/", needAuthenticated, cartController.getCartByUser);
 router.post(
   "/",
   needAuthenticated,
