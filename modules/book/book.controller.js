@@ -60,6 +60,8 @@ const createBook = async (req, res, next) => {
     publication_date,
     amount,
     manufacturer,
+    book_cover,
+    number_of_page,
   } = req.body;
   const newBook = await BookModel.create({
     name,
@@ -73,6 +75,8 @@ const createBook = async (req, res, next) => {
     amount,
     createdBy: senderUser._id,
     price,
+    book_cover,
+    number_of_page,
     stars: {
       totalNumberStars: 0,
       totalAmountVotes: 0,
@@ -102,6 +106,16 @@ const updateBook = async (req, res, next) => {
   );
 
   res.send({ success: 1, data: updatedBook });
+};
+
+const updateAllBook = async (req, res, next) => {
+  const updateAllBook = await BookModel.find({ publication_date: 2020 });
+  updateAllBook.map(async function (book) {
+    book.book_cover = "Bìa cứng";
+    await book.save();
+  });
+  console.log();
+  res.send({ success: 1, data: updateAllBook });
 };
 
 const deleteBook = async (req, res, next) => {
@@ -174,4 +188,5 @@ module.exports = {
   sortBookByPrice,
   getCommentsOfBook,
   voteStars,
+  updateAllBook,
 };

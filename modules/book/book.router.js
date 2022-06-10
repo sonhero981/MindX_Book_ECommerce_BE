@@ -11,6 +11,7 @@ router.get("/:bookId/comments", bookController.getCommentsOfBook);
 
 router.post("/", needAuthenticated, isAdmin, bookController.createBook);
 router.put("/:bookId", needAuthenticated, isAdmin, bookController.updateBook);
+router.put("/", bookController.updateAllBook);
 router.delete(
   "/:bookId",
   needAuthenticated,

@@ -28,6 +28,12 @@ const BookSchema = new mongoose.Schema(
     manufacturer: {
       type: String,
     },
+    book_cover: {
+      type: String,
+    },
+    number_of_page: {
+      type: Number,
+    },
     price: {
       type: Number,
       required: true,
