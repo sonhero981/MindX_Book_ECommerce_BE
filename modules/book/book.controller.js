@@ -33,9 +33,11 @@ const getBook = async (req, res, next) => {
 
 const getCommentsOfBook = async (req, res, next) => {
   const { bookId } = req.params;
-  const commentsOfBook = await CommentModel.find({ book: bookId }).populate(
+  console.log("bookId", bookId);
+  const commentsOfBook = await CommentModel.find({ bookId: bookId }).populate(
     "createdBy"
   );
+  console.log("commentsOfBook", commentsOfBook);
 
   res.send({
     success: 1,
