@@ -57,7 +57,7 @@ const createBook = async (req, res, next) => {
     category,
     price,
     publisher,
-    publisher_date,
+    publication_date,
     amount,
     manufacturer,
   } = req.body;
@@ -68,7 +68,7 @@ const createBook = async (req, res, next) => {
     imageURL,
     category,
     publisher,
-    publisher_date,
+    publication_date,
     manufacturer,
     amount,
     createdBy: senderUser._id,
