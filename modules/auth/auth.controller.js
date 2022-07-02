@@ -79,7 +79,7 @@ const forgotPassword = async (req, res, next) => {
   console.log(createdAt);
   const currentDate = Date.now();
   if (currentDate - createdAt < 60 * 1000) {
-    throw new HTTPError(400, "khong bam nhieu lan");
+    throw new HTTPError(400, "Không bấm gửi nhiều lần");
   }
 
   function createCode() {
@@ -110,7 +110,7 @@ const confirmForgotPassword = async (req, res, next) => {
   const user = await UserModel.findOne({ email });
 
   if (!user) {
-    throw new HTTPError("ko thấy user");
+    throw new HTTPError(400, "Không tìm thấy user");
   }
 
   const currentDate = Date.now();
@@ -118,15 +118,15 @@ const confirmForgotPassword = async (req, res, next) => {
   const expiresDate = createdAt + time * 1000;
 
   if (currentDate > expiresDate) {
-    throw new HTTPError("hết hạn");
+    throw new HTTPError(400, "Code đổi mật khẩu đã hết hạn");
   }
 
   if (code !== user.codeResetPassword.code) {
-    throw new HTTPError("Code ko đúng");
+    throw new HTTPError(400, "Code đổi mật khẩu không đúng");
   }
 
   if (password !== confirmPassword) {
-    throw new HTTPError("mk ko trùng nhau");
+    throw new HTTPError(400, "Mật khẩu không trùng nhau");
   }
 
   //Mã hóa password
@@ -136,7 +136,7 @@ const confirmForgotPassword = async (req, res, next) => {
   user.codeResetPassword = null;
 
   await user.save();
-  res.send({ success: 1, data: "Cập nhật thành công" });
+  res.send({ success: 1, data: "Cập nhật mật khẩu thành công" });
 };
 
 module.exports = {

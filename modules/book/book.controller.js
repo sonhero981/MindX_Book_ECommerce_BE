@@ -109,9 +109,9 @@ const updateBook = async (req, res, next) => {
 };
 
 const updateAllBook = async (req, res, next) => {
-  const updateAllBook = await BookModel.find({ publication_date: 2020 });
+  const updateAllBook = await BookModel.find({ number_of_page: 390 });
   updateAllBook.map(async function (book) {
-    book.book_cover = "Bìa cứng";
+    book.number_of_page = 350;
     await book.save();
   });
   console.log();
