@@ -4,7 +4,7 @@ const router = express.Router();
 const billController = require("./bill.controller");
 const isAdmin = require("../middleware/isAdmin");
 
-router.get("/:billId", needAuthenticated, billController.getBill);
+router.get("/bills/", needAuthenticated, isAdmin, billController.getBills);
 router.post("/", needAuthenticated, billController.createBill);
 router.put(
   "/:billId",
@@ -12,5 +12,17 @@ router.put(
   isAdmin,
   billController.updateStatusBill
 );
+router.put(
+  "/canceledBill/:billId",
+  needAuthenticated,
+  billController.canceledBill
+);
+router.get("/", needAuthenticated, billController.getBillsById);
+// router.get(
+//   "/",
+//   needAuthenticated,
+//   isAdmin,
+//   billController.getStaMonthlyRevenue
+// );
 
 module.exports = router;

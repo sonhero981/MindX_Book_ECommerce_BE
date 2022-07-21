@@ -140,10 +140,10 @@ const voteStars = async (req, res, next) => {
   const { numberStars } = req.body;
   const { bookId } = req.params;
   const senderUser = req.user;
-  console.log(senderUser);
+
   const book = await BookModel.findById(bookId);
   const oldUsersVote = book?.stars?.usersVote;
-  console.log("oldUserVote", oldUsersVote);
+
   if (oldUsersVote.length === 0) {
     book.stars = {
       totalNumberStars: 0,

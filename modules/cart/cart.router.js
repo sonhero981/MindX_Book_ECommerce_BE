@@ -12,5 +12,5 @@ router.post(
   cartController.createOrUpdateCart
 );
 // router.put("/:cardId", needAuthenticated, cartController);
-// router.delete("/:commentId", needAuthenticated, cartController);
+// router.delete("/:cardId", needAuthenticated, cartController);
 module.exports = router;

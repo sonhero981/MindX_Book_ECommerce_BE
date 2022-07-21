@@ -3,23 +3,32 @@ const HTTPError = require("../common/httpError");
 const BillModel = require("./bill");
 const mongoose = require("mongoose");
 
-const getBill = async (req, res, next) => {
-  const { billId } = req.params;
+const getBills = async (req, res, next) => {
   const senderUser = req.user;
-  console.log(" senderUser._id", senderUser._id);
 
-  const foundBill = await BillModel.findById(billId)
+  const foundBills = await BillModel.find()
     .populate("sellProducts.book")
     .populate("createdBy");
 
-  if (senderUser.isAdmin === true) {
-    res.send({ success: 1, data: foundBill });
+  if (senderUser.isAdmin !== true) {
+    throw new HTTPError(401, "Không phải admin");
+  }
+  res.send({ success: 1, data: foundBills });
+};
+
+const getBillsById = async (req, res, next) => {
+  const senderUser = req.user;
+  if (!senderUser) {
+    throw new HTTPError(401, "Chưa đăng nhập");
+  }
+  const foundBills = await BillModel.find({ createdBy: senderUser._id })
+    .populate("sellProducts.book")
+    .populate("createdBy");
+  if (!foundBills) {
+    throw new HTTPError(401, "Chưa có bill nào");
   }
 
-  if (String(senderUser._id) !== String(foundBill.createdBy._id)) {
-    throw new HTTPError(400, "không p bill của b");
-  }
-  res.send({ success: 1, data: foundBill });
+  res.send({ success: 1, data: foundBills });
 };
 
 const createBill = async (req, res, next) => {
@@ -31,8 +40,6 @@ const createBill = async (req, res, next) => {
     0
   );
 
-  console.log(totalBill);
-
   const newBill = await BillModel.create({
     sellProducts,
     createdBy: senderUser._id,
@@ -40,32 +47,11 @@ const createBill = async (req, res, next) => {
     phoneNumber,
     status: "unprocessed",
     totalBill,
-  });
-
-  const populateBill = await BillModel.findById(newBill._id)
+  })
     .populate("sellProducts.book")
     .populate("createdBy");
-  console.log(
-    "sellProducts.map(x => x._id)",
-    sellProducts.map(x => x._id)
-  );
-  const bookIds = sellProducts.map(x => mongoose.Types.ObjectId(x.book._id));
 
-  const foundSelledBook = await BookModel.find({
-    _id: { $in: bookIds },
-  });
-
-  sellProducts.forEach(prod => {
-    try {
-      BookModel.findById(prod._id, { $inc: { amount: -prod.qualityBook } });
-    } catch (err) {
-      console.log(err);
-    }
-  });
-
-  console.log(foundSelledBook);
-
-  res.send({ success: 1, data: populateBill });
+  res.send({ success: 1, data: newBill });
 };
 
 const updateStatusBill = async (req, res, next) => {
@@ -79,4 +65,48 @@ const updateStatusBill = async (req, res, next) => {
   res.send({ success: 1, data: updateBill });
 };
 
-module.exports = { getBill, createBill, updateStatusBill };
+const canceledBill = async (req, res, next) => {
+  const { billId } = req.params;
+  const senderUser = req.user;
+  if (!senderUser) {
+    throw new HTTPError(401, "Chưa đăng nhập");
+  }
+  const foundBill = await BillModel.findOne({ _id: billId });
+  console.log(foundBill);
+  if (!foundBill) {
+    throw new HTTPError(401, "Không có bill này");
+  }
+  console.log("foundbill.creadtedBy", String(foundBill.createdBy));
+  console.log("senderUser._id", String(senderUser._id));
+  if (String(foundBill.createdBy) !== String(senderUser._id)) {
+    throw new HTTPError(401, "Không phải bill của bạn");
+  }
+  if (foundBill.status !== "unprocessed") {
+    throw new HTTPError(401, "Không thể hủy đơn hàng");
+  }
+  const canceledBill = await BillModel.findByIdAndUpdate(billId, {
+    status: "canceled",
+  });
+  res.send({ success: 1, data: "Hủy đơn hàng thành công" });
+};
+
+const getStaMonthlyRevenue = async (req, res, next) => {
+  const { year } = req.query;
+  console.log("year", year);
+  const thisYearOrder = await BillModel.find({
+    createdAt: {
+      $gte: new Date(`${year}-01-01`),
+      $lte: new Date(`${year}-12-31`),
+    },
+    status: "completed",
+  }).select("_id  createdAt totalBill sellProducts");
+  res.send({ success: 1, data: thisYearOrder });
+};
+module.exports = {
+  getBills,
+  getBillsById,
+  createBill,
+  canceledBill,
+  updateStatusBill,
+  getStaMonthlyRevenue,
+};

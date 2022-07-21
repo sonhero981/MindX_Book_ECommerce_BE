@@ -27,7 +27,7 @@ const BillSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["unprocessed", "processed", "completed"],
+      enum: ["unprocessed", "processed", "completed", "canceled"],
       required: true,
     },
   },
