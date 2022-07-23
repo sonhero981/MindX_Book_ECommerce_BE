@@ -4,9 +4,15 @@ const BillModel = require("./bill");
 const mongoose = require("mongoose");
 
 const getBills = async (req, res, next) => {
+  const { status } = req.query;
   const senderUser = req.user;
 
-  const foundBills = await BillModel.find()
+  const filter = {};
+  if (status) {
+    filter.status = status;
+  }
+
+  const foundBills = await BillModel.find(filter)
     .populate("sellProducts.book")
     .populate("createdBy");
 
