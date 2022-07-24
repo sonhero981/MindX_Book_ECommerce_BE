@@ -58,11 +58,15 @@ const getBillsByUser = async (req, res, next) => {
 const createBill = async (req, res, next) => {
   const { sellProducts, address, phoneNumber } = req.body;
   const senderUser = req.user;
-
-  const totalBill = sellProducts.reduce(
-    (acc, cur) => acc + cur.book.price * cur.qualityBook,
-    0
-  );
+  const getPriceBook = async _Id => {
+    const book = await BookModel.findById(_Id);
+    console.log("price", book.price);
+    return book.price;
+  };
+  const totalBill = await sellProducts.reduce(async (acc, cur) => {
+    return (await acc) + (await getPriceBook(cur.book)) * cur.qualityBook;
+  }, 0);
+  console.log("totalBill", totalBill);
 
   const newBill = await BillModel.create({
     sellProducts,

@@ -18,7 +18,6 @@ const BillSchema = new mongoose.Schema(
       ref: "User",
     },
     address: AddressSchema,
-
     status: {
       type: String,
       enum: ["unprocessed", "processed", "completed", "canceled"],
