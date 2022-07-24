@@ -17,7 +17,7 @@ const BillSchema = new mongoose.Schema(
       ref: "User",
     },
     address: {
-      type: String,
+      type: Object,
       required: true,
     },
     phoneNumber: {

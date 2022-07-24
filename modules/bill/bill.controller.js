@@ -71,9 +71,7 @@ const createBill = async (req, res, next) => {
     phoneNumber,
     status: "unprocessed",
     totalBill,
-  })
-    .populate("sellProducts.book")
-    .populate("createdBy");
+  });
 
   res.send({ success: 1, data: newBill });
 };
