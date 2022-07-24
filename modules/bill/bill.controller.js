@@ -4,7 +4,9 @@ const BillModel = require("./bill");
 const mongoose = require("mongoose");
 
 const getBills = async (req, res, next) => {
-  const { status } = req.query;
+  const { status, offset, limit } = req.query;
+  const offsetNumber = offset && Number(offset) ? Number(offset) : 0;
+  const limitNumber = limit && Number(limit) ? Number(limit) : 1000;
   const senderUser = req.user;
 
   const filter = {};
@@ -13,6 +15,8 @@ const getBills = async (req, res, next) => {
   }
 
   const foundBills = await BillModel.find(filter)
+    .skip(offsetNumber)
+    .limit(limitNumber)
     .populate("sellProducts.book")
     .populate("createdBy");
 
