@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const AddressSchema = require("../address/address");
 
 const BillSchema = new mongoose.Schema(
   {
@@ -16,14 +17,7 @@ const BillSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "User",
     },
-    address: {
-      type: Object,
-      required: true,
-    },
-    phoneNumber: {
-      type: Number,
-      required: true,
-    },
+    address: AddressSchema,
 
     status: {
       type: String,
