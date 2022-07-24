@@ -27,11 +27,25 @@ const getBills = async (req, res, next) => {
 };
 
 const getBillsByUser = async (req, res, next) => {
+  const { status, offset, limit } = req.query;
+  console.log("status", status);
   const senderUser = req.user;
   if (!senderUser) {
     throw new HTTPError(401, "Chưa đăng nhập");
   }
-  const foundBills = await BillModel.find({ createdBy: senderUser._id })
+  const offsetNumber = offset && Number(offset) ? Number(offset) : 0;
+  const limitNumber = limit && Number(limit) ? Number(limit) : 1000;
+
+  const filter = {};
+  if (status) {
+    filter.status = status;
+  }
+  const foundBills = await BillModel.find({
+    createdBy: senderUser._id,
+    ...filter,
+  })
+    .skip(offsetNumber)
+    .limit(limitNumber)
     .populate("sellProducts.book")
     .populate("createdBy");
   if (!foundBills) {
