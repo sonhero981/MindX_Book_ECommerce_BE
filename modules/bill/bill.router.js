@@ -17,7 +17,7 @@ router.put(
   needAuthenticated,
   billController.canceledBill
 );
-router.get("/", needAuthenticated, billController.getBillsById);
+router.get("/", needAuthenticated, billController.getBillsByUser);
 // router.get(
 //   "/",
 //   needAuthenticated,

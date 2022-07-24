@@ -26,7 +26,7 @@ const getBills = async (req, res, next) => {
   res.send({ success: 1, data: foundBills });
 };
 
-const getBillsById = async (req, res, next) => {
+const getBillsByUser = async (req, res, next) => {
   const senderUser = req.user;
   if (!senderUser) {
     throw new HTTPError(401, "Chưa đăng nhập");
@@ -114,7 +114,7 @@ const getStaMonthlyRevenue = async (req, res, next) => {
 };
 module.exports = {
   getBills,
-  getBillsById,
+  getBillsByUser,
   createBill,
   canceledBill,
   updateStatusBill,
