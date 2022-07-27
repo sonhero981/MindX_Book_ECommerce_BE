@@ -3,10 +3,10 @@ const HTTPError = require("../common/httpError");
 const BillModel = require("./bill");
 const mongoose = require("mongoose");
 
-const removeAll = async (req, res) => {
-  const removeBills = await BillModel.remove({ phoneNumber: 965976864 });
-  res.send({ success: 1, data: "success" });
-};
+// const removeAll = async (req, res) => {
+//   const removeBills = await BillModel.remove({ phoneNumber: 965976864 });
+//   res.send({ success: 1, data: "success" });
+// };
 
 const getBills = async (req, res, next) => {
   const { status, offset, limit } = req.query;
@@ -87,7 +87,7 @@ const createBill = async (req, res, next) => {
 const updateStatusBill = async (req, res, next) => {
   const { status } = req.body;
   const { billId } = req.params;
-  const updateBill = await BillModal.findByIdAndUpdate(
+  const updateBill = await BillModel.findByIdAndUpdate(
     billId,
     { status: status },
     { new: true }
@@ -139,5 +139,5 @@ module.exports = {
   canceledBill,
   updateStatusBill,
   getStaMonthlyRevenue,
-  removeAll,
+  // removeAll,
 };
