@@ -9,7 +9,7 @@ const validateInput = (schema, property) => {
     } else {
       const { details } = error;
       const message = details.map(i => i.message).join(".");
-      throw new HTTPError(message, 422);
+      throw new HTTPError(422, message);
     }
   };
 };

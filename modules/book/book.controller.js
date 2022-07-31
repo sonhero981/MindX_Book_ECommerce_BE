@@ -3,13 +3,40 @@ const CommentModel = require("../comment/comment");
 const HTTPError = require("../common/httpError");
 
 const getBooks = async (req, res, next) => {
-  const { offset, limit, category, keyword } = req.query;
+  const { offset, limit, category, keyword, price } = req.query;
   const offsetNumber = offset && Number(offset) ? Number(offset) : 0;
   const limitNumber = limit && Number(limit) ? Number(limit) : 1000;
-
   const filter = {};
   if (category) {
     filter.category = category;
+  }
+
+  if (price) {
+    if (price == 1) {
+      filter.price = {
+        $lte: 50000,
+        $gte: 0,
+      };
+    } else if (price == 2) {
+      filter.price = {
+        $lte: 100000,
+        $gte: 50000,
+      };
+    } else if (price == 3) {
+      filter.price = {
+        $lte: 200000,
+        $gte: 100000,
+      };
+    } else if (price == 4) {
+      filter.price = {
+        $lte: 500000,
+        $gte: 200000,
+      };
+    } else {
+      filter.price = {
+        $gte: 500000,
+      };
+    }
   }
 
   if (keyword) {
@@ -21,7 +48,7 @@ const getBooks = async (req, res, next) => {
     .skip(offsetNumber)
     .limit(limitNumber);
 
-  const totalBook = await BookModel.countDocuments();
+  const totalBook = await BookModel.countDocuments(filter);
   res.send({ success: 1, data: books, totalBook: totalBook });
 };
 

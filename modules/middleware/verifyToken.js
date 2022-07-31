@@ -1,1 +1,0 @@
-const verifyToken = async token => {};

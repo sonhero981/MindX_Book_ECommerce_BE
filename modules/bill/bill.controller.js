@@ -63,15 +63,19 @@ const getBillsByUser = async (req, res, next) => {
 const createBill = async (req, res, next) => {
   const { sellProducts, address } = req.body;
   const senderUser = req.user;
-  const getPriceBook = async _Id => {
+  const getPriceBookAndUpdateAmount = async (_Id, quality) => {
     const book = await BookModel.findById(_Id);
-    console.log("price", book.price);
+    book.amount -= quality;
+    await book.save();
     return book.price;
   };
   const totalBill = await sellProducts.reduce(async (acc, cur) => {
-    return (await acc) + (await getPriceBook(cur.book)) * cur.qualityBook;
+    return (
+      (await acc) +
+      (await getPriceBookAndUpdateAmount(cur.book, cur.qualityBook)) *
+        cur.qualityBook
+    );
   }, 0);
-  console.log("totalBill", totalBill);
 
   const newBill = await BillModel.create({
     sellProducts,
@@ -87,6 +91,17 @@ const createBill = async (req, res, next) => {
 const updateStatusBill = async (req, res, next) => {
   const { status } = req.body;
   const { billId } = req.params;
+  const foundBill = await BillModel.findOne({ _id: billId });
+  if (status === "canceled") {
+    foundBill.sellProducts.forEach(async sellProduct => {
+      console.log("sellProduct.book._Id", sellProduct.book);
+      const foundBook = await BookModel.findById(sellProduct.book);
+      console.log(foundBook);
+      foundBook.amount += sellProduct.qualityBook;
+      await foundBook.save();
+      return;
+    });
+  }
   const updateBill = await BillModel.findByIdAndUpdate(
     billId,
     { status: status },
@@ -102,18 +117,26 @@ const canceledBill = async (req, res, next) => {
     throw new HTTPError(401, "Chưa đăng nhập");
   }
   const foundBill = await BillModel.findOne({ _id: billId });
-  console.log(foundBill);
+
   if (!foundBill) {
     throw new HTTPError(401, "Không có bill này");
   }
-  console.log("foundbill.creadtedBy", String(foundBill.createdBy));
-  console.log("senderUser._id", String(senderUser._id));
+
   if (String(foundBill.createdBy) !== String(senderUser._id)) {
     throw new HTTPError(401, "Không phải bill của bạn");
   }
   if (foundBill.status !== "unprocessed") {
     throw new HTTPError(401, "Không thể hủy đơn hàng");
   }
+  foundBill.sellProducts.forEach(async sellProduct => {
+    console.log("sellProduct.book._Id", sellProduct.book);
+    const foundBook = await BookModel.findById(sellProduct.book);
+    console.log(foundBook);
+    foundBook.amount += sellProduct.qualityBook;
+    await foundBook.save();
+    return;
+  });
+
   const canceledBill = await BillModel.findByIdAndUpdate(billId, {
     status: "canceled",
   });
