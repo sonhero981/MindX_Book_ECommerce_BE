@@ -126,7 +126,10 @@ const canceledBill = async (req, res, next) => {
     throw new HTTPError(401, "Không phải bill của bạn");
   }
   if (foundBill.status !== "unprocessed") {
-    throw new HTTPError(401, "Không thể hủy đơn hàng");
+    throw new HTTPError(
+      401,
+      "Đơn hàng đã lên đơn vui lòng liên hệ với admin để hủy đơn hàng"
+    );
   }
   foundBill.sellProducts.forEach(async sellProduct => {
     console.log("sellProduct.book._Id", sellProduct.book);
