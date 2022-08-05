@@ -34,11 +34,10 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   const { username, password } = req.body;
   const existedUser = await UserModel.findOne({ username });
-  const isAdmin = existedUser.isAdmin;
-
   if (!existedUser) {
     throw new HTTPError(400, "Username hoặc password không đúng");
   }
+  const isAdmin = existedUser?.isAdmin;
 
   const matchedPassword = await bcrypt.compare(password, existedUser.password);
   if (!matchedPassword) {

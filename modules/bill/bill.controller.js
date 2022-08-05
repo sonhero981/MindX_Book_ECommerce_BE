@@ -63,18 +63,22 @@ const getBillsByUser = async (req, res, next) => {
 const createBill = async (req, res, next) => {
   const { sellProducts, address } = req.body;
   const senderUser = req.user;
-  const getPriceBookAndUpdateAmount = async (_Id, quality) => {
+  const getPriceBook = async _Id => {
     const book = await BookModel.findById(_Id);
-    book.amount -= quality;
-    await book.save();
     return book.price;
   };
+
+  const checkAmountBook = await sellProducts.forEach(async sellProduct => {
+    const foundBook = await BookModel.findById(sellProduct.book);
+    console.log("foundBook.amount", foundBook.amount);
+    console.log(sellProduct.qualityBook);
+    if (foundBook.amount < sellProduct.qualityBook) {
+      next(new Error("Bạn đã mua quá số lượng sách trong kho"));
+    }
+  });
+
   const totalBill = await sellProducts.reduce(async (acc, cur) => {
-    return (
-      (await acc) +
-      (await getPriceBookAndUpdateAmount(cur.book, cur.qualityBook)) *
-        cur.qualityBook
-    );
+    return (await acc) + (await getPriceBook(cur.book)) * cur.qualityBook;
   }, 0);
 
   const newBill = await BillModel.create({
@@ -85,6 +89,8 @@ const createBill = async (req, res, next) => {
     totalBill,
   });
 
+  minusBooks(newBill);
+
   res.send({ success: 1, data: newBill });
 };
 
@@ -93,14 +99,7 @@ const updateStatusBill = async (req, res, next) => {
   const { billId } = req.params;
   const foundBill = await BillModel.findOne({ _id: billId });
   if (status === "canceled") {
-    foundBill.sellProducts.forEach(async sellProduct => {
-      console.log("sellProduct.book._Id", sellProduct.book);
-      const foundBook = await BookModel.findById(sellProduct.book);
-      console.log(foundBook);
-      foundBook.amount += sellProduct.qualityBook;
-      await foundBook.save();
-      return;
-    });
+    addBooks(foundBill);
   }
   const updateBill = await BillModel.findByIdAndUpdate(
     billId,
@@ -131,14 +130,7 @@ const canceledBill = async (req, res, next) => {
       "Đơn hàng đã lên đơn vui lòng liên hệ với admin để hủy đơn hàng"
     );
   }
-  foundBill.sellProducts.forEach(async sellProduct => {
-    console.log("sellProduct.book._Id", sellProduct.book);
-    const foundBook = await BookModel.findById(sellProduct.book);
-    console.log(foundBook);
-    foundBook.amount += sellProduct.qualityBook;
-    await foundBook.save();
-    return;
-  });
+  addBooks(foundBill);
 
   const canceledBill = await BillModel.findByIdAndUpdate(billId, {
     status: "canceled",
@@ -147,16 +139,40 @@ const canceledBill = async (req, res, next) => {
 };
 
 const getStaMonthlyRevenue = async (req, res, next) => {
-  const { year } = req.query;
-  console.log("year", year);
-  const thisYearOrder = await BillModel.find({
+  const { startTime, endTime } = req.query;
+  console.log(startTime, endTime);
+  console.log("startTime", new Date(+startTime));
+  const start = new Date(+startTime);
+  const end = new Date(+endTime);
+  const thisMonthOrder = await BillModel.find({
     createdAt: {
-      $gte: new Date(`${year}-01-01`),
-      $lte: new Date(`${year}-12-31`),
+      $gte: start,
+      $lte: end,
     },
     status: "completed",
   }).select("_id  createdAt totalBill sellProducts");
-  res.send({ success: 1, data: thisYearOrder });
+  res.send({ success: 1, data: thisMonthOrder });
+};
+
+const minusBooks = async Bill => {
+  Bill.sellProducts.forEach(async sellProduct => {
+    const foundBook = await BookModel.findById(sellProduct.book);
+    foundBook.amount -= sellProduct.qualityBook;
+    if (foundBook.amount < 0) {
+      next(new Error("Bạn đã mua quá số lượng sách trong kho"));
+    }
+    await foundBook.save();
+    return;
+  });
+};
+
+const addBooks = async Bill => {
+  Bill.sellProducts.forEach(async sellProduct => {
+    const foundBook = await BookModel.findById(sellProduct.book);
+    foundBook.amount += sellProduct.qualityBook;
+    await foundBook.save();
+    return;
+  });
 };
 module.exports = {
   getBills,

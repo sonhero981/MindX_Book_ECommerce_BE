@@ -36,6 +36,10 @@ app.use("*", (req, res, next) => {
   res.send({ message: "404 not found" });
 });
 
+process.on("uncaughtException", function (req, res, error) {
+  console.log(error);
+});
+
 // Bắt toàn bộ các middleware mà gọi hàm next (error)
 app.use(function (err, req, res, next) {
   console.log(err);

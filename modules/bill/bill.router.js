@@ -20,11 +20,11 @@ router.put(
 // router.delete("/", billController.removeAll);
 
 router.get("/", needAuthenticated, billController.getBillsByUser);
-// router.get(
-//   "/",
-//   needAuthenticated,
-//   isAdmin,
-//   billController.getStaMonthlyRevenue
-// );
+router.get(
+  "/report",
+  needAuthenticated,
+  isAdmin,
+  billController.getStaMonthlyRevenue
+);
 
 module.exports = router;
