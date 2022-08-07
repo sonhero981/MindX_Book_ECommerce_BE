@@ -23,7 +23,8 @@ const getBills = async (req, res, next) => {
     .skip(offsetNumber)
     .limit(limitNumber)
     .populate("sellProducts.book")
-    .populate("createdBy");
+    .populate("createdBy")
+    .sort({ createdAt: -1 });
 
   if (senderUser.isAdmin !== true) {
     throw new HTTPError(401, "Không phải admin");
@@ -52,7 +53,8 @@ const getBillsByUser = async (req, res, next) => {
     .skip(offsetNumber)
     .limit(limitNumber)
     .populate("sellProducts.book")
-    .populate("createdBy");
+    .populate("createdBy")
+    .sort({ createdAt: -1 });
   if (!foundBills) {
     throw new HTTPError(401, "Chưa có bill nào");
   }
@@ -187,6 +189,55 @@ const getStaMonthlyRevenue = async (req, res, next) => {
   res.send({ success: 1, data: data });
 };
 
+const graph = async (req, res, next) => {
+  const start = new Date().getMonth.getMilliseconds;
+  console.log(start);
+  const thisMonthOrder = await BillModel.find({
+    createdAt: {
+      $gte: start,
+    },
+    status: "completed",
+  }).select("_id  createdAt totalBill sellProducts createdBy");
+
+  const thisMonthOrdeAll = await BillModel.find({
+    createdAt: {
+      $gte: start,
+      $lte: end,
+    },
+  }).select("_id  createdAt totalBill sellProducts createdBy");
+
+  const totalRevenue = await thisMonthOrder.reduce(async (acc, cur) => {
+    return (await acc) + cur.totalBill;
+  }, 0);
+
+  const numberOfBills = thisMonthOrder.length;
+  const getQuantityBook = async sellProducts => {
+    return await sellProducts.reduce((acc, cur) => {
+      return acc + cur.qualityBook;
+    }, 0);
+  };
+
+  const numberOfBooks = await thisMonthOrder.reduce(async (acc, cur) => {
+    return (await acc) + (await getQuantityBook(cur.sellProducts));
+  }, 0);
+
+  const listBuyer = [];
+  await thisMonthOrdeAll.forEach(async bill =>
+    listBuyer.push(String(bill.createdBy))
+  );
+  const buyers = new Set(await listBuyer);
+  const numberOfBuyer = [...buyers].length;
+
+  const data = {
+    totalRevenue,
+    numberOfBills,
+    numberOfBooks,
+    numberOfBuyer,
+  };
+
+  res.send({ success: 1, data: data });
+};
+
 const minusBooks = async Bill => {
   Bill.sellProducts.forEach(async sellProduct => {
     const foundBook = await BookModel.findById(sellProduct.book);
@@ -207,6 +258,7 @@ const addBooks = async Bill => {
     return;
   });
 };
+
 module.exports = {
   getBills,
   getBillsByUser,
@@ -214,5 +266,6 @@ module.exports = {
   canceledBill,
   updateStatusBill,
   getStaMonthlyRevenue,
+  graph,
   // removeAll,
 };

@@ -46,7 +46,8 @@ const getBooks = async (req, res, next) => {
 
   const books = await BookModel.find(filter)
     .skip(offsetNumber)
-    .limit(limitNumber);
+    .limit(limitNumber)
+    .sort({ createdAt: -1 });
 
   const totalBook = await BookModel.countDocuments(filter);
   res.send({ success: 1, data: books, totalBook: totalBook });
@@ -61,9 +62,9 @@ const getBook = async (req, res, next) => {
 const getCommentsOfBook = async (req, res, next) => {
   const { bookId } = req.params;
   console.log("bookId", bookId);
-  const commentsOfBook = await CommentModel.find({ bookId: bookId }).populate(
-    "createdBy"
-  );
+  const commentsOfBook = await CommentModel.find({ bookId: bookId })
+    .populate("createdBy")
+    .sort({ createdAt: -1 });
   console.log("commentsOfBook", commentsOfBook);
 
   res.send({

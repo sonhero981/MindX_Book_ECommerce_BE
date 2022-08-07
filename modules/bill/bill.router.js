@@ -27,4 +27,6 @@ router.get(
   billController.getStaMonthlyRevenue
 );
 
+router.get("/graph", needAuthenticated, isAdmin, billController.graph);
+
 module.exports = router;
