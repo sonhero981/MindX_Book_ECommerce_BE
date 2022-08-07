@@ -70,8 +70,6 @@ const createBill = async (req, res, next) => {
 
   const checkAmountBook = await sellProducts.forEach(async sellProduct => {
     const foundBook = await BookModel.findById(sellProduct.book);
-    console.log("foundBook.amount", foundBook.amount);
-    console.log(sellProduct.qualityBook);
     if (foundBook.amount < sellProduct.qualityBook) {
       next(new Error("Bạn đã mua quá số lượng sách trong kho"));
     }
@@ -140,18 +138,53 @@ const canceledBill = async (req, res, next) => {
 
 const getStaMonthlyRevenue = async (req, res, next) => {
   const { startTime, endTime } = req.query;
-  console.log(startTime, endTime);
-  console.log("startTime", new Date(+startTime));
   const start = new Date(+startTime);
-  const end = new Date(+endTime);
+  const end = new Date(+endTime + 86400000);
   const thisMonthOrder = await BillModel.find({
     createdAt: {
       $gte: start,
       $lte: end,
     },
     status: "completed",
-  }).select("_id  createdAt totalBill sellProducts");
-  res.send({ success: 1, data: thisMonthOrder });
+  }).select("_id  createdAt totalBill sellProducts createdBy");
+
+  const thisMonthOrdeAll = await BillModel.find({
+    createdAt: {
+      $gte: start,
+      $lte: end,
+    },
+  }).select("_id  createdAt totalBill sellProducts createdBy");
+
+  const totalRevenue = await thisMonthOrder.reduce(async (acc, cur) => {
+    return (await acc) + cur.totalBill;
+  }, 0);
+
+  const numberOfBills = thisMonthOrder.length;
+  const getQuantityBook = async sellProducts => {
+    return await sellProducts.reduce((acc, cur) => {
+      return acc + cur.qualityBook;
+    }, 0);
+  };
+
+  const numberOfBooks = await thisMonthOrder.reduce(async (acc, cur) => {
+    return (await acc) + (await getQuantityBook(cur.sellProducts));
+  }, 0);
+
+  const listBuyer = [];
+  await thisMonthOrdeAll.forEach(async bill =>
+    listBuyer.push(String(bill.createdBy))
+  );
+  const buyers = new Set(await listBuyer);
+  const numberOfBuyer = [...buyers].length;
+
+  const data = {
+    totalRevenue,
+    numberOfBills,
+    numberOfBooks,
+    numberOfBuyer,
+  };
+
+  res.send({ success: 1, data: data });
 };
 
 const minusBooks = async Bill => {
