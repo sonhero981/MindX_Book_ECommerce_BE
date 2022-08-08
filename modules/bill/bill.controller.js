@@ -2,6 +2,7 @@ const BookModel = require("../book/book");
 const HTTPError = require("../common/httpError");
 const BillModel = require("./bill");
 const mongoose = require("mongoose");
+const moment = require("moment");
 
 // const removeAll = async (req, res) => {
 //   const removeBills = await BillModel.remove({ phoneNumber: 965976864 });
@@ -150,13 +151,6 @@ const getStaMonthlyRevenue = async (req, res, next) => {
     status: "completed",
   }).select("_id  createdAt totalBill sellProducts createdBy");
 
-  const thisMonthOrdeAll = await BillModel.find({
-    createdAt: {
-      $gte: start,
-      $lte: end,
-    },
-  }).select("_id  createdAt totalBill sellProducts createdBy");
-
   const totalRevenue = await thisMonthOrder.reduce(async (acc, cur) => {
     return (await acc) + cur.totalBill;
   }, 0);
@@ -173,7 +167,7 @@ const getStaMonthlyRevenue = async (req, res, next) => {
   }, 0);
 
   const listBuyer = [];
-  await thisMonthOrdeAll.forEach(async bill =>
+  await thisMonthOrder.forEach(async bill =>
     listBuyer.push(String(bill.createdBy))
   );
   const buyers = new Set(await listBuyer);
@@ -190,52 +184,42 @@ const getStaMonthlyRevenue = async (req, res, next) => {
 };
 
 const graph = async (req, res, next) => {
-  const start = new Date().getMonth.getMilliseconds;
-  console.log(start);
-  const thisMonthOrder = await BillModel.find({
-    createdAt: {
-      $gte: start,
-    },
-    status: "completed",
-  }).select("_id  createdAt totalBill sellProducts createdBy");
+  const currentDate = moment();
+  const prev1Month = moment(currentDate).add(-1, "M");
+  const prev2Month = moment(currentDate).add(-2, "M");
+  const prev3Month = moment(currentDate).add(-3, "M");
+  const prev4Month = moment(currentDate).add(-4, "M");
+  const prev5Month = moment(currentDate).add(-5, "M");
 
-  const thisMonthOrdeAll = await BillModel.find({
-    createdAt: {
-      $gte: start,
-      $lte: end,
-    },
-  }).select("_id  createdAt totalBill sellProducts createdBy");
-
-  const totalRevenue = await thisMonthOrder.reduce(async (acc, cur) => {
-    return (await acc) + cur.totalBill;
-  }, 0);
-
-  const numberOfBills = thisMonthOrder.length;
-  const getQuantityBook = async sellProducts => {
-    return await sellProducts.reduce((acc, cur) => {
-      return acc + cur.qualityBook;
-    }, 0);
-  };
-
-  const numberOfBooks = await thisMonthOrder.reduce(async (acc, cur) => {
-    return (await acc) + (await getQuantityBook(cur.sellProducts));
-  }, 0);
-
-  const listBuyer = [];
-  await thisMonthOrdeAll.forEach(async bill =>
-    listBuyer.push(String(bill.createdBy))
-  );
-  const buyers = new Set(await listBuyer);
-  const numberOfBuyer = [...buyers].length;
-
-  const data = {
-    totalRevenue,
-    numberOfBills,
-    numberOfBooks,
-    numberOfBuyer,
-  };
-
-  res.send({ success: 1, data: data });
+  res.send({
+    success: 1,
+    data: [
+      {
+        ...(await getDataGrab(currentDate)),
+        date: currentDate.format("MM-YYYY"),
+      },
+      {
+        ...(await getDataGrab(prev1Month)),
+        date: prev1Month.format("MM-YYYY"),
+      },
+      {
+        ...(await getDataGrab(prev2Month)),
+        date: prev2Month.format("MM-YYYY"),
+      },
+      {
+        ...(await getDataGrab(prev3Month)),
+        date: prev3Month.format("MM-YYYY"),
+      },
+      {
+        ...(await getDataGrab(prev4Month)),
+        date: prev4Month.format("MM-YYYY"),
+      },
+      {
+        ...(await getDataGrab(prev5Month)),
+        date: prev5Month.format("MM-YYYY"),
+      },
+    ],
+  });
 };
 
 const minusBooks = async Bill => {
@@ -257,6 +241,51 @@ const addBooks = async Bill => {
     await foundBook.save();
     return;
   });
+};
+
+const getDataGrab = async time => {
+  const endTime = moment(time).endOf("month");
+
+  const startTime = moment(time).startOf("months");
+
+  const thisMonthOrder = await BillModel.find({
+    createdAt: {
+      $gte: startTime,
+      $lte: endTime,
+    },
+    status: "completed",
+  }).select("_id  createdAt totalBill sellProducts createdBy");
+
+  const totalRevenue = await thisMonthOrder.reduce(async (acc, cur) => {
+    return (await acc) + cur.totalBill;
+  }, 0);
+
+  const numberOfBills = thisMonthOrder.length;
+  const getQuantityBook = async sellProducts => {
+    return await sellProducts.reduce((acc, cur) => {
+      return acc + cur.qualityBook;
+    }, 0);
+  };
+
+  const numberOfBooks = await thisMonthOrder.reduce(async (acc, cur) => {
+    return (await acc) + (await getQuantityBook(cur.sellProducts));
+  }, 0);
+
+  const listBuyer = [];
+  await thisMonthOrder.forEach(async bill =>
+    listBuyer.push(String(bill.createdBy))
+  );
+  const buyers = new Set(await listBuyer);
+  const numberOfBuyer = [...buyers].length;
+
+  const data = {
+    totalRevenue,
+    numberOfBills,
+    numberOfBooks,
+    numberOfBuyer,
+  };
+
+  return data;
 };
 
 module.exports = {
