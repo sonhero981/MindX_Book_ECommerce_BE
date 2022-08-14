@@ -5,17 +5,23 @@ const HTTPError = require("../common/httpError");
 const { sendMail } = require("../service/mailer");
 
 const register = async (req, res, next) => {
-  const { username, password, email } = req.body;
+  const { username, password, email, password2 } = req.body;
+
+  //check xem 2 mật khẩu có trùng nhau không
+
+  if (password !== password2) {
+    throw new HTTPError(400, "Nhập lại mật khẩu không chính xác!");
+  }
   // Check xem tài khoản đã tồn tại chưa
   const existedUser = await UserModel.findOne({ username: username });
   if (existedUser) {
-    throw new HTTPError(400, "Username duplicate");
+    throw new HTTPError(400, "Tên đăng nhập đã tồn tại");
   }
   const existedEmail = await UserModel.findOne({ email: email });
 
   //Check email đã tồn tại chưa
   if (existedEmail) {
-    throw new HTTPError(400, "Email duplicate");
+    throw new HTTPError(400, "Email đã tồn tại");
   }
   //Mã hóa password
   const salt = await bcrypt.genSalt(10);
@@ -72,7 +78,7 @@ const forgotPassword = async (req, res, next) => {
 
   const existedUser = await UserModel.findOne({ email: email });
   if (!existedUser) {
-    throw new HTTPError(400, "Email is not found");
+    throw new HTTPError(400, "Email Không đúng");
   }
 
   const { createdAt } = existedUser.codeResetPassword;
